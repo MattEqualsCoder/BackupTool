@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/MattEqualsCoder/BackupTool#readme",
   "dependencies": {
+    "7zip-min": "^1.4.4",
     "archiver": "^7.0.1",
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",

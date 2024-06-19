@@ -32,6 +32,8 @@ if (!backupDestinationPath) {
     backupDestinationPath = `${backupRootPath}/backups`;
 }
 
+let backupPassword : string = yamlValue["password"];
+
 const backupPaths : BackupPath[] = [];
 
 let paths : any[] = yamlValue["paths"];
@@ -49,5 +51,6 @@ export {
     backupSchedule as BackupSchedule,
     backupPaths as BackupPaths,
     backupRootPath as BackupRootPath,
-    backupDestinationPath as BackupDestinationPath
+    backupDestinationPath as BackupDestinationPath,
+    backupPassword as BackupPassword
 }

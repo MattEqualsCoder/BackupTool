@@ -1,9 +1,9 @@
-import { BackupPaths, BackupRootPath, BackupDestinationPath } from './environment'
+import { BackupPaths, BackupRootPath, BackupDestinationPath, BackupPassword } from './environment'
 import { Logger } from './logger';
 import * as fs from 'fs';
 import path from 'path';
 import dayjs from 'dayjs'
-const archiver = require('archiver');
+const _7z = require('7zip-min');
 
 export class Backuper {
 
@@ -74,33 +74,28 @@ export class Backuper {
     }
 
     CreateZipFile(archiveDate: string) {
-        const output = fs.createWriteStream(`${BackupDestinationPath}/${archiveDate}.zip`);
-        const archive = archiver('zip', {
-            zlib: { level: 9 }
-        });
 
-        Logger.info(`Creating up file ${BackupDestinationPath}/${archiveDate}.zip`);
+        Logger.info(`Creating compressed file ${BackupDestinationPath}/${archiveDate}.7z`);
 
-        output.on('close', function() {
-            fs.rmSync(`${BackupDestinationPath}/${archiveDate}`, { recursive: true, force: true});
-            Logger.info(`Created ${BackupDestinationPath}/${archiveDate}.zip`);
-        });
+        let _7zArguments : string[] = ['a']
 
-        archive.on('warning', function(err: any) {
-            if (err.code === 'ENOENT') {
-                Logger.warn(err);
-            } else {
+        if (BackupPassword) {
+            _7zArguments.push(`-p${BackupPassword}`);
+        }
+
+        _7zArguments.push(`${BackupDestinationPath}/${archiveDate}.7z`);
+        _7zArguments.push(`${BackupDestinationPath}/${archiveDate}/`);
+
+        _7z.cmd(_7zArguments, (err: any) => {
+
+            if (err) {
                 Logger.error(err);
+            } else {
+                Logger.info(`Archive ${BackupDestinationPath}/${archiveDate}.7z created`);
             }
-        });
-        
-        archive.on('error', function(err: any) {
-            Logger.error(err);
-        });
 
-        archive.pipe(output);
-        archive.directory(`${BackupDestinationPath}/${archiveDate}/`, false);
-        archive.finalize();
+            fs.rmSync(`${BackupDestinationPath}/${archiveDate}`, { recursive: true, force: true});
+        });
     }
 
 }

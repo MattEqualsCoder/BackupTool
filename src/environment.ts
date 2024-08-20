@@ -10,6 +10,8 @@ class BackupPath {
     Filters: string[] = [];
 }
 
+const tempPath = process.env.TEMP_PATH ?? "/tmp";
+
 let backupYamlPath = process.env.BACKUP_YAML_PATH;
 if (!backupYamlPath) {
     backupYamlPath = "./backup.yml"
@@ -52,5 +54,6 @@ export {
     backupPaths as BackupPaths,
     backupRootPath as BackupRootPath,
     backupDestinationPath as BackupDestinationPath,
-    backupPassword as BackupPassword
+    backupPassword as BackupPassword,
+    tempPath as TempPath
 }

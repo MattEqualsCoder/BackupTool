@@ -1,4 +1,4 @@
-import { BackupPaths, BackupRootPath, BackupDestinationPath, BackupPassword } from './environment'
+import { BackupPaths, BackupRootPath, BackupDestinationPath, BackupPassword, TempPath } from './environment'
 import { Logger } from './logger';
 import * as fs from 'fs';
 import path from 'path';
@@ -10,28 +10,36 @@ export class Backuper {
     RunBackup() : void {
 
         let date = dayjs().format("YYYYMMDDHHmmss");
-        let backupPath = `${BackupDestinationPath}/${date}`;
+        let tempPath = `${TempPath}/${date}`;
 
-        Logger.info(`Creating backup ${backupPath}`);
+        Logger.info(`Creating backup ${tempPath}`);
 
-        fs.mkdirSync(backupPath, { recursive: true });
+        fs.mkdirSync(tempPath, { recursive: true });
+        fs.mkdirSync(BackupDestinationPath, { recursive: true });
 
-        BackupPaths.forEach(backup => {
-            Logger.info(`Running backup for path ${backup.Path}`);
-
-            if (!fs.existsSync(backup.Path)) {
-                Logger.warn(`Path ${backup.Path} does not exist`);
-                return;
-            }
-
-            if (fs.lstatSync(backup.Path).isDirectory()) {
-                this.RunDirectoryBackup(backup.Path, backup.RecursiveLevels, backup.Filters, backupPath);
-            } else {
-                this.RunFileBackup(backup.Path, backup.Filters, backupPath);
-            }
-        });
-
-        this.CreateZipFile(date);
+        try {
+            BackupPaths.forEach(backup => {
+                Logger.info(`Running backup for path ${backup.Path}`);
+    
+                if (!fs.existsSync(backup.Path)) {
+                    Logger.warn(`Path ${backup.Path} does not exist`);
+                    return;
+                }
+    
+                if (fs.lstatSync(backup.Path).isDirectory()) {
+                    this.RunDirectoryBackup(backup.Path, backup.RecursiveLevels, backup.Filters, tempPath);
+                } else {
+                    this.RunFileBackup(backup.Path, backup.Filters, tempPath);
+                }
+            });
+    
+            this.CreateZipFile(date);
+        } catch (e: any) {
+            Logger.error(e.Message);
+            fs.rmSync(tempPath, { recursive: true, force: true});
+            Logger.info("Removed temp folder");
+        }
+        
     }
 
     RunDirectoryBackup(directoryPath: string, recursiveLevel: number, filters: string[], backupPath: string) {
@@ -75,7 +83,7 @@ export class Backuper {
 
     CreateZipFile(archiveDate: string) {
 
-        Logger.info(`Creating compressed file ${BackupDestinationPath}/${archiveDate}.7z`);
+        Logger.info(`Creating compressed file ${TempPath}/${archiveDate}.7z`);
 
         let _7zArguments : string[] = ['a']
 
@@ -83,18 +91,22 @@ export class Backuper {
             _7zArguments.push(`-p${BackupPassword}`);
         }
 
-        _7zArguments.push(`${BackupDestinationPath}/${archiveDate}.7z`);
-        _7zArguments.push(`${BackupDestinationPath}/${archiveDate}/`);
+        _7zArguments.push(`${TempPath}/${archiveDate}.7z`);
+        _7zArguments.push(`${TempPath}/${archiveDate}/`);
 
         _7z.cmd(_7zArguments, (err: any) => {
 
             if (err) {
                 Logger.error(err);
             } else {
-                Logger.info(`Archive ${BackupDestinationPath}/${archiveDate}.7z created`);
+                Logger.info(`Archive ${TempPath}/${archiveDate}.7z created`);
+                fs.copyFileSync(`${TempPath}/${archiveDate}.7z`, `${BackupDestinationPath}/${archiveDate}.7z`, fs.constants.COPYFILE_FICLONE_FORCE);
+                Logger.info(`Copied to ${BackupDestinationPath}/${archiveDate}.7z`);
             }
 
-            fs.rmSync(`${BackupDestinationPath}/${archiveDate}`, { recursive: true, force: true});
+            fs.rmSync(`${TempPath}/${archiveDate}`, { recursive: true, force: true});
+
+            
         });
     }
 

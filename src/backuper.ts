@@ -100,7 +100,7 @@ export class Backuper {
                 Logger.error(err);
             } else {
                 Logger.info(`Archive ${TempPath}/${archiveDate}.7z created`);
-                fs.copyFileSync(`${TempPath}/${archiveDate}.7z`, `${BackupDestinationPath}/${archiveDate}.7z`, fs.constants.COPYFILE_FICLONE_FORCE);
+                fs.copyFileSync(`${TempPath}/${archiveDate}.7z`, `${BackupDestinationPath}/${archiveDate}.7z`);
                 Logger.info(`Copied to ${BackupDestinationPath}/${archiveDate}.7z`);
             }
 

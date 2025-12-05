@@ -1,0 +1,11 @@
+schedule: "0 * * * *"
+root_path: /home/user/Documents
+destination_path: /home/user/target_folder
+password: Test
+paths:
+  - path: "/home/user/Documents/Projects"
+    recursive_levels: 1
+  - path: "/home/user/Documents/Scripts"
+    recursive_levels: 0
+    filters:
+      - ".sh$"

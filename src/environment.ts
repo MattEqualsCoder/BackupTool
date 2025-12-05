@@ -19,26 +19,31 @@ if (!backupYamlPath) {
 const yamlText = fs.readFileSync(backupYamlPath, 'utf8');
 const yamlValue = parse(yamlText);
 
-let backupSchedule : string = yamlValue["schedule"];
+let backupSchedule: string = yamlValue["schedule"];
 if (!backupSchedule) {
     backupSchedule = "0/15 * * * *";
 }
 
-let backupRootPath : string = yamlValue["root_path"];
+let backupRootPath: string = yamlValue["root_path"];
 if (!backupRootPath) {
     backupRootPath = "/";
 }
 
-let backupDestinationPath : string = yamlValue["destination_path"];
+let backupDestinationPath: string = yamlValue["destination_path"];
 if (!backupDestinationPath) {
     backupDestinationPath = `${backupRootPath}/backups`;
 }
 
-let backupPassword : string = yamlValue["password"];
+let backupPassword: string = yamlValue["password"];
 
-const backupPaths : BackupPath[] = [];
+let maxBackupDays: number = yamlValue["backup_count_days"];
+if (!maxBackupDays) {
+    maxBackupDays = 90;
+}
 
-let paths : any[] = yamlValue["paths"];
+const backupPaths: BackupPath[] = [];
+
+let paths: any[] = yamlValue["paths"];
 
 paths.forEach(path => {
     let pathDetails = path;
@@ -55,5 +60,6 @@ export {
     backupRootPath as BackupRootPath,
     backupDestinationPath as BackupDestinationPath,
     backupPassword as BackupPassword,
-    tempPath as TempPath
+    tempPath as TempPath,
+    maxBackupDays as MaxBackupDays
 }

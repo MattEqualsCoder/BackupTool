@@ -1,0 +1,30 @@
+name: .NET Build + Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get Tag
+        if: ${{ github.event_name != 'pull_request' }}
+        id: get-tag
+        shell: pwsh
+        run: |
+          $time = (Get-Date).ToString("yyyyMMddHHmm")
+          Write-Host "tag=v$time"
+          Write-Output "tag=v$time" >> $env:GITHUB_OUTPUT
+      - uses: ncipollo/release-action@v1
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          tag: ${{ steps.get-tag.outputs.tag }}
+          omitBody: true
